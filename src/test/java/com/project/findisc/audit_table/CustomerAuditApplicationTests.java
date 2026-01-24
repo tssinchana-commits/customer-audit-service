@@ -1,4 +1,4 @@
-package com.project.findisc.customer_audit;
+package com.project.findisc.audit_table;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,7 +1,7 @@
-package com.project.findisc.customer_audit.controller;
+package com.project.findisc.audit_table.controller;
 
-import com.project.findisc.customer_audit.entity.CustomerEntity;
-import com.project.findisc.customer_audit.service.CustomerService;
+import com.project.findisc.audit_table.entity.CustomerEntity;
+import com.project.findisc.audit_table.service.CustomerService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,15 +32,16 @@ public class CustomerController {
     }
 
     @PutMapping("/{customerId}")
-    public CustomerEntity updateCustomer(@PathVariable Long customerId,
+    public CustomerEntity updateCustomer(
+            @PathVariable Long customerId,
             @RequestBody CustomerEntity customer) {
         return customerService.updateCustomer(customerId, customer);
     }
 
     @DeleteMapping("/{customerId}")
-    public String deleteCustomer(@PathVariable Long customerId,
-            @RequestParam String reason) {
-        customerService.deleteCustomer(customerId, reason);
+    public String deleteCustomer(
+            @PathVariable Long customerId) {
+        customerService.deleteCustomer(customerId);
         return "Customer deleted successfully";
     }
 }
