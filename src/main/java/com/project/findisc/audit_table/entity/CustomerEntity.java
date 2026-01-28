@@ -1,6 +1,6 @@
 package com.project.findisc.audit_table.entity;
 
-import com.project.findisc.audit_table.listener.CustomerAuditListener;
+import com.project.findisc.audit_table.listener.AuditListener;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "customers_rel")
-@EntityListeners(CustomerAuditListener.class) // 🔥 REQUIRED
+@EntityListeners(AuditListener.class) // 🔥 REQUIRED
 @Getter
 @Setter
 @NoArgsConstructor

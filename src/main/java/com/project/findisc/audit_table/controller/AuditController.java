@@ -1,28 +1,28 @@
 package com.project.findisc.audit_table.controller;
 
-import com.project.findisc.audit_table.entity.CustomerAuditEntity;
-import com.project.findisc.audit_table.repository.CustomerAuditRepository;
+import com.project.findisc.audit_table.entity.AuditEntity;
+import com.project.findisc.audit_table.repository.AuditRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/customer/api/v1/audits")
-public class CustomerAuditController {
+public class AuditController {
 
-    private final CustomerAuditRepository auditRepository;
+    private final AuditRepository auditRepository;
 
-    public CustomerAuditController(CustomerAuditRepository auditRepository) {
+    public AuditController(AuditRepository auditRepository) {
         this.auditRepository = auditRepository;
     }
 
     @GetMapping
-    public List<CustomerAuditEntity> getAllAudits() {
+    public List<AuditEntity> getAllAudits() {
         return auditRepository.findAll();
     }
 
     @GetMapping("/{id}")
-    public CustomerAuditEntity getAudit(@PathVariable Long id) {
+    public AuditEntity getAudit(@PathVariable Long id) {
         return auditRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Audit not found"));
     }
