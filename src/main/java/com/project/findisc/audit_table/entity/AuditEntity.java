@@ -2,8 +2,6 @@ package com.project.findisc.audit_table.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +11,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AuditEntity {
 
     @Id
@@ -24,8 +23,7 @@ public class AuditEntity {
     private String action;
     private String reason;
 
-    @Column(columnDefinition = "jsonb")
-    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "TEXT")
     private String data;
 
     private LocalDateTime createdAt;
