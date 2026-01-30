@@ -6,14 +6,6 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.project.findisc</groupId>
-    <artifactId>customer_audit</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
-
-    <name>customer_audit</name>
-    <description>Customer Audit Service</description>
-
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -21,8 +13,14 @@
         <relativePath/>
     </parent>
 
+    <groupId>com.project.findisc</groupId>
+    <artifactId>customer_audit</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>customer_audit</name>
+    <description>Customer Audit Service</description>
+
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
     </properties>
 
     <dependencies>
@@ -33,7 +31,7 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- JPA -->
+        <!-- Spring Data JPA -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -53,7 +51,7 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Spring Boot Test (JUnit + Mockito included) -->
+        <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -64,12 +62,10 @@
 
     <build>
         <plugins>
-
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
-
         </plugins>
     </build>
 

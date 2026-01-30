@@ -33,6 +33,7 @@ public class AuditListener<T> {
             audit.setEntityId(extractId(entity));
             audit.setAction(action);
             audit.setReason(reason);
+
             audit.setData(EntityJsonUtil.toJson(entity));
             audit.setCreatedAt(LocalDateTime.now());
 
