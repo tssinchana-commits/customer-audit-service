@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "customers_rel")
-@EntityListeners(AuditListener.class) // 🔥 REQUIRED
+@EntityListeners(AuditListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,8 +22,12 @@ public class CustomerEntity {
     private String name;
     private String email;
     private String phone;
-
-    private LocalDateTime updatedAt; // 🔥 REQUIRED
+    private String status;
+    private String kyc;
+    private String aadhaar;
+    private String pan;
+    private String setPhoto;
+    private LocalDateTime updatedAt;
 
     @PrePersist
     @PreUpdate

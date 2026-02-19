@@ -33,6 +33,8 @@ public class CustomerService {
         existing.setName(customer.getName());
         existing.setEmail(customer.getEmail());
         existing.setPhone(customer.getPhone());
+        existing.setStatus(customer.getStatus());
+        existing.setKyc(customer.getKyc());
         return customerRepository.save(existing);
     }
 
