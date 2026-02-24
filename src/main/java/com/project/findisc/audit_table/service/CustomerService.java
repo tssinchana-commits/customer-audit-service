@@ -28,13 +28,19 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
-    public CustomerEntity updateCustomer(Long id, CustomerEntity customer) {
-        CustomerEntity existing = getCustomerById(id);
-        existing.setName(customer.getName());
-        existing.setEmail(customer.getEmail());
-        existing.setPhone(customer.getPhone());
-        existing.setStatus(customer.getStatus());
-        existing.setKyc(customer.getKyc());
+    public CustomerEntity updateCustomer(Long id, CustomerEntity updatedCustomer) {
+
+        CustomerEntity existing = customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+
+        existing.setName(updatedCustomer.getName());
+        existing.setPhone(updatedCustomer.getPhone());
+        existing.setStatus(updatedCustomer.getStatus());
+        existing.setKyc(updatedCustomer.getKyc());
+        existing.setAadhaar(updatedCustomer.getAadhaar());
+        existing.setPan(updatedCustomer.getPan());
+        existing.setPhoto(updatedCustomer.getPhoto());
+
         return customerRepository.save(existing);
     }
 

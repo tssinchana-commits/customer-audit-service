@@ -2,12 +2,14 @@ package com.project.findisc.audit_table.controller;
 
 import com.project.findisc.audit_table.entity.CustomerEntity;
 import com.project.findisc.audit_table.service.CustomerService;
+import com.project.findisc.audit_table.storage.FileStorageProvider;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 
 import java.io.IOException;
-import java.nio.file.*;
 import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -16,9 +18,12 @@ import java.util.List;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final FileStorageProvider storageProvider;
 
-    public CustomerController(CustomerService customerService) {
+    public CustomerController(CustomerService customerService,
+            FileStorageProvider storageProvider) {
         this.customerService = customerService;
+        this.storageProvider = storageProvider;
     }
 
     // ✅ GET ALL
@@ -33,7 +38,7 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.getCustomerById(customerId));
     }
 
-    // ✅ CREATE WITH FILE UPLOAD
+    // ✅ CREATE WITH FILE UPLOAD (UPDATED TO USE STORAGE PROVIDER)
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<CustomerEntity> createCustomer(
             @RequestParam String name,
@@ -53,23 +58,17 @@ public class CustomerController {
         customer.setPan(pan);
 
         if (photo != null && !photo.isEmpty()) {
-            String uploadDir = "uploads/";
-            Files.createDirectories(Paths.get(uploadDir));
-
-            String fileName = System.currentTimeMillis() + "_" + photo.getOriginalFilename();
-            Path filePath = Paths.get(uploadDir + fileName);
-
-            Files.write(filePath, photo.getBytes());
-            customer.setSetPhoto(fileName);
+            String documentId = storageProvider.saveFile(photo);
+            customer.setPhoto(documentId);
         }
 
         return ResponseEntity.ok(customerService.createCustomer(customer));
     }
 
-    // ✅ UPDATE WITH FILE UPLOAD
-    @PutMapping(value = "/{customerId}", consumes = "multipart/form-data")
+    // ✅ UPDATE WITH FILE UPLOAD (UPDATED TO USE STORAGE PROVIDER)
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerEntity> updateCustomer(
-            @PathVariable Long customerId,
+            @PathVariable Long id,
             @RequestParam String name,
             @RequestParam String phone,
             @RequestParam String status,
@@ -78,7 +77,7 @@ public class CustomerController {
             @RequestParam(required = false) String pan,
             @RequestParam(required = false) MultipartFile photo) throws IOException {
 
-        CustomerEntity existing = customerService.getCustomerById(customerId);
+        CustomerEntity existing = customerService.getCustomerById(id);
 
         existing.setName(name);
         existing.setPhone(phone);
@@ -88,17 +87,14 @@ public class CustomerController {
         existing.setPan(pan);
 
         if (photo != null && !photo.isEmpty()) {
-            String uploadDir = "uploads/";
-            Files.createDirectories(Paths.get(uploadDir));
-
-            String fileName = System.currentTimeMillis() + "_" + photo.getOriginalFilename();
-            Path filePath = Paths.get(uploadDir + fileName);
-
-            Files.write(filePath, photo.getBytes());
-            existing.setSetPhoto(fileName);
+            String documentId = storageProvider.saveFile(photo);
+            existing.setPhoto(documentId);
         }
 
-        return ResponseEntity.ok(customerService.updateCustomer(customerId, existing));
+        System.out.println("Updated API Called");
+
+        CustomerEntity updated = customerService.updateCustomer(id, existing);
+        return ResponseEntity.ok(updated);
     }
 
     // ✅ DELETE
