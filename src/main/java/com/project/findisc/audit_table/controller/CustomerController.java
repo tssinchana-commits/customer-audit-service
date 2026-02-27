@@ -1,8 +1,10 @@
 package com.project.findisc.audit_table.controller;
 
 import com.project.findisc.audit_table.entity.CustomerEntity;
+import com.project.findisc.audit_table.enums.CustomerStatus;
 import com.project.findisc.audit_table.service.CustomerService;
 import com.project.findisc.audit_table.storage.FileStorageProvider;
+import com.project.findisc.audit_table.dto.StatusUpdateRequest;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,24 +28,41 @@ public class CustomerController {
         this.storageProvider = storageProvider;
     }
 
-    // ✅ GET ALL
+    // STATUS UPDATE API (FIXED URL)
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable Long id,
+            @RequestBody StatusUpdateRequest request) {
+
+        CustomerStatus newStatus = CustomerStatus.valueOf(request.getStatus().toUpperCase());
+
+        customerService.updateCustomerStatus(
+                id,
+                newStatus,
+                request.getRole(),
+                request.getUsername(),
+                request.getRemarks());
+
+        return ResponseEntity.ok("Status updated successfully");
+    }
+
+    // GET ALL
     @GetMapping
     public ResponseEntity<List<CustomerEntity>> getCustomers() {
         return ResponseEntity.ok(customerService.getAllCustomers());
     }
 
-    // ✅ GET BY ID
+    // GET BY ID
     @GetMapping("/{customerId}")
     public ResponseEntity<CustomerEntity> getCustomer(@PathVariable Long customerId) {
         return ResponseEntity.ok(customerService.getCustomerById(customerId));
     }
 
-    // ✅ CREATE WITH FILE UPLOAD (UPDATED TO USE STORAGE PROVIDER)
-    @PostMapping(consumes = "multipart/form-data")
+    // CREATE
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerEntity> createCustomer(
             @RequestParam String name,
             @RequestParam String phone,
-            @RequestParam String status,
             @RequestParam String kyc,
             @RequestParam(required = false) String aadhaar,
             @RequestParam(required = false) String pan,
@@ -52,10 +71,11 @@ public class CustomerController {
         CustomerEntity customer = new CustomerEntity();
         customer.setName(name);
         customer.setPhone(phone);
-        customer.setStatus(status);
         customer.setKyc(kyc);
         customer.setAadhaar(aadhaar);
         customer.setPan(pan);
+
+        // Default status handled in Service
 
         if (photo != null && !photo.isEmpty()) {
             String documentId = storageProvider.saveFile(photo);
@@ -65,13 +85,12 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.createCustomer(customer));
     }
 
-    // ✅ UPDATE WITH FILE UPLOAD (UPDATED TO USE STORAGE PROVIDER)
+    // UPDATE
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerEntity> updateCustomer(
             @PathVariable Long id,
             @RequestParam String name,
             @RequestParam String phone,
-            @RequestParam String status,
             @RequestParam String kyc,
             @RequestParam(required = false) String aadhaar,
             @RequestParam(required = false) String pan,
@@ -81,7 +100,6 @@ public class CustomerController {
 
         existing.setName(name);
         existing.setPhone(phone);
-        existing.setStatus(status);
         existing.setKyc(kyc);
         existing.setAadhaar(aadhaar);
         existing.setPan(pan);
@@ -91,13 +109,11 @@ public class CustomerController {
             existing.setPhoto(documentId);
         }
 
-        System.out.println("Updated API Called");
-
         CustomerEntity updated = customerService.updateCustomer(id, existing);
         return ResponseEntity.ok(updated);
     }
 
-    // ✅ DELETE
+    // DELETE
     @DeleteMapping("/{customerId}")
     public ResponseEntity<String> deleteCustomer(@PathVariable Long customerId) {
         customerService.deleteCustomer(customerId);
