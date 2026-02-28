@@ -2,6 +2,7 @@ package com.project.findisc.audit_table.controller;
 
 import com.project.findisc.audit_table.entity.CustomerEntity;
 import com.project.findisc.audit_table.enums.CustomerStatus;
+import com.project.findisc.audit_table.enums.UserRole;
 import com.project.findisc.audit_table.service.CustomerService;
 import com.project.findisc.audit_table.storage.FileStorageProvider;
 import com.project.findisc.audit_table.dto.StatusUpdateRequest;
@@ -28,37 +29,42 @@ public class CustomerController {
         this.storageProvider = storageProvider;
     }
 
-    // STATUS UPDATE API (FIXED URL)
+    // ✅ STATUS UPDATE (ONLY ONE METHOD)
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateStatus(
+    public ResponseEntity<String> updateStatus(
             @PathVariable Long id,
             @RequestBody StatusUpdateRequest request) {
 
         CustomerStatus newStatus = CustomerStatus.valueOf(request.getStatus().toUpperCase());
 
+        UserRole role = UserRole.valueOf(request.getRole().toUpperCase());
+
         customerService.updateCustomerStatus(
                 id,
                 newStatus,
-                request.getRole(),
+                role,
                 request.getUsername(),
                 request.getRemarks());
 
         return ResponseEntity.ok("Status updated successfully");
     }
 
-    // GET ALL
+    // ✅ GET ALL
     @GetMapping
     public ResponseEntity<List<CustomerEntity>> getCustomers() {
         return ResponseEntity.ok(customerService.getAllCustomers());
     }
 
-    // GET BY ID
+    // ✅ GET BY ID
     @GetMapping("/{customerId}")
-    public ResponseEntity<CustomerEntity> getCustomer(@PathVariable Long customerId) {
-        return ResponseEntity.ok(customerService.getCustomerById(customerId));
+    public ResponseEntity<CustomerEntity> getCustomer(
+            @PathVariable Long customerId) {
+
+        return ResponseEntity.ok(
+                customerService.getCustomerById(customerId));
     }
 
-    // CREATE
+    // ✅ CREATE CUSTOMER
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerEntity> createCustomer(
             @RequestParam String name,
@@ -66,7 +72,8 @@ public class CustomerController {
             @RequestParam String kyc,
             @RequestParam(required = false) String aadhaar,
             @RequestParam(required = false) String pan,
-            @RequestParam(required = false) MultipartFile photo) throws IOException {
+            @RequestParam(required = false) MultipartFile photo)
+            throws IOException {
 
         CustomerEntity customer = new CustomerEntity();
         customer.setName(name);
@@ -75,17 +82,16 @@ public class CustomerController {
         customer.setAadhaar(aadhaar);
         customer.setPan(pan);
 
-        // Default status handled in Service
-
         if (photo != null && !photo.isEmpty()) {
             String documentId = storageProvider.saveFile(photo);
             customer.setPhoto(documentId);
         }
 
-        return ResponseEntity.ok(customerService.createCustomer(customer));
+        return ResponseEntity.ok(
+                customerService.createCustomer(customer));
     }
 
-    // UPDATE
+    // ✅ UPDATE CUSTOMER
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerEntity> updateCustomer(
             @PathVariable Long id,
@@ -94,7 +100,8 @@ public class CustomerController {
             @RequestParam String kyc,
             @RequestParam(required = false) String aadhaar,
             @RequestParam(required = false) String pan,
-            @RequestParam(required = false) MultipartFile photo) throws IOException {
+            @RequestParam(required = false) MultipartFile photo)
+            throws IOException {
 
         CustomerEntity existing = customerService.getCustomerById(id);
 
@@ -109,13 +116,15 @@ public class CustomerController {
             existing.setPhoto(documentId);
         }
 
-        CustomerEntity updated = customerService.updateCustomer(id, existing);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(
+                customerService.updateCustomer(id, existing));
     }
 
-    // DELETE
+    // ✅ DELETE CUSTOMER
     @DeleteMapping("/{customerId}")
-    public ResponseEntity<String> deleteCustomer(@PathVariable Long customerId) {
+    public ResponseEntity<String> deleteCustomer(
+            @PathVariable Long customerId) {
+
         customerService.deleteCustomer(customerId);
         return ResponseEntity.ok("Customer deleted successfully");
     }

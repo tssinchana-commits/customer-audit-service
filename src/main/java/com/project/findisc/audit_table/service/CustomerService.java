@@ -1,6 +1,7 @@
 package com.project.findisc.audit_table.service;
 
 import org.springframework.stereotype.Service;
+import com.project.findisc.audit_table.enums.UserRole;
 import com.project.findisc.audit_table.entity.CustomerEntity;
 import com.project.findisc.audit_table.enums.CustomerStatus;
 import com.project.findisc.audit_table.repository.CustomerRepository;
@@ -56,7 +57,7 @@ public class CustomerService {
     // ✅ STATUS FLOW LOGIC
     public void updateCustomerStatus(Long id,
             CustomerStatus newStatus,
-            String role,
+            UserRole role,
             String username,
             String remarks) {
 
@@ -65,19 +66,20 @@ public class CustomerService {
 
         switch (role) {
 
-            case "REPRESENTATIVE":
+            // REPRESENTATIVE
+            case REPRESENTATIVE:
 
                 if (newStatus == CustomerStatus.SUBMITTED) {
                     customer.setCustomerStatus(CustomerStatus.SUBMITTED);
                     customer.setCreatedBy(username);
                 } else {
-                    throw new CustomException("Not allowed", 400);
+                    throw new CustomException("Representative can only submit", 400);
                 }
                 break;
 
-            case "VERIFICATION":
+            // VERIFIER
+            case VERIFICATION:
 
-                // SUBMITTED → VERIFIED
                 if (newStatus == CustomerStatus.VERIFIED &&
                         customer.getCustomerStatus() == CustomerStatus.SUBMITTED) {
 
@@ -85,10 +87,8 @@ public class CustomerService {
                     customer.setVerifiedBy(username);
                     customer.setVerifiedAt(LocalDateTime.now());
                     customer.setRemarks(remarks);
-
                 }
 
-                // SUBMITTED → REJECTED
                 else if (newStatus == CustomerStatus.REJECTED &&
                         customer.getCustomerStatus() == CustomerStatus.SUBMITTED) {
 
@@ -96,25 +96,27 @@ public class CustomerService {
                     customer.setVerifiedBy(username);
                     customer.setVerifiedAt(LocalDateTime.now());
                     customer.setRemarks(remarks);
-
                 }
 
-                // REJECTED → SUBMITTED (Resubmission)
                 else if (newStatus == CustomerStatus.SUBMITTED &&
                         customer.getCustomerStatus() == CustomerStatus.REJECTED) {
 
+                    // Resubmission
                     customer.setCustomerStatus(CustomerStatus.SUBMITTED);
+                    customer.setVerifiedBy(null);
+                    customer.setVerifiedAt(null);
+                    customer.setApprovedBy(null);
+                    customer.setApprovedAt(null);
                     customer.setRemarks("Resubmitted by " + username);
-
                 }
 
                 else {
-                    throw new CustomException("Invalid status transition", 400);
+                    throw new CustomException("Invalid status transition for Verifier", 400);
                 }
-
                 break;
 
-            case "MANAGER":
+            // MANAGER
+            case MANAGER:
 
                 if (newStatus == CustomerStatus.ACTIVE &&
                         customer.getCustomerStatus() == CustomerStatus.VERIFIED) {
@@ -123,17 +125,19 @@ public class CustomerService {
                     customer.setApprovedBy(username);
                     customer.setApprovedAt(LocalDateTime.now());
                     customer.setRemarks(remarks);
+                }
 
-                } else if (newStatus == CustomerStatus.REJECTED &&
+                else if (newStatus == CustomerStatus.REJECTED &&
                         customer.getCustomerStatus() == CustomerStatus.VERIFIED) {
 
                     customer.setCustomerStatus(CustomerStatus.REJECTED);
                     customer.setApprovedBy(username);
                     customer.setApprovedAt(LocalDateTime.now());
                     customer.setRemarks(remarks);
+                }
 
-                } else {
-                    throw new CustomException("Invalid status transition", 400);
+                else {
+                    throw new CustomException("Invalid status transition for Manager", 400);
                 }
                 break;
 
