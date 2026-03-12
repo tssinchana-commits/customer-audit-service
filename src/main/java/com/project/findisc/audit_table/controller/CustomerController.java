@@ -29,7 +29,6 @@ public class CustomerController {
         this.storageProvider = storageProvider;
     }
 
-    // ✅ STATUS UPDATE (ONLY ONE METHOD)
     @PutMapping("/{id}/status")
     public ResponseEntity<String> updateStatus(
             @PathVariable Long id,

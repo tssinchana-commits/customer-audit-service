@@ -2,6 +2,8 @@ package com.project.findisc.audit_table.controller;
 
 import com.project.findisc.audit_table.entity.AccountEntity;
 import com.project.findisc.audit_table.service.AccountService;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,10 +18,12 @@ public class AccountController {
         this.accountService = accountService;
     }
 
+   
     @PostMapping
-    public AccountEntity createAccount(@RequestBody AccountEntity account) {
-        return accountService.create(account);
-    }
+@ResponseStatus(HttpStatus.CREATED)
+public AccountEntity createAccount(@RequestBody AccountEntity account) {
+    return accountService.create(account);
+}
 
     @GetMapping
     public List<AccountEntity> getAllAccounts() {

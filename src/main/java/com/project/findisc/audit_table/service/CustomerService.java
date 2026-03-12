@@ -64,87 +64,91 @@ public class CustomerService {
         CustomerEntity customer = customerRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Customer not found", 404));
 
+        CustomerStatus currentStatus = customer.getCustomerStatus();
+
         switch (role) {
 
-            // REPRESENTATIVE
+            // 🔹 REPRESENTATIVE
             case REPRESENTATIVE:
 
-                if (newStatus == CustomerStatus.SUBMITTED) {
+                if (currentStatus == CustomerStatus.REJECTED ||
+                        currentStatus == CustomerStatus.MANAGER_REJECTED) {
+
                     customer.setCustomerStatus(CustomerStatus.SUBMITTED);
                     customer.setCreatedBy(username);
+                    customer.setRemarks("Resubmitted by " + username);
+
+                    // Clear previous audit
+                    customer.setVerifiedBy(null);
+                    customer.setVerifiedAt(null);
+                    customer.setApprovedBy(null);
+                    customer.setApprovedAt(null);
+
                 } else {
-                    throw new CustomException("Representative can only submit", 400);
+                    throw new CustomException(
+                            "Representative can only resubmit rejected applications", 400);
                 }
                 break;
 
-            // VERIFIER
-            case VERIFICATION:
+            // 🔹 VERIFIER
+            case VERIFIER:
 
-                if (newStatus == CustomerStatus.VERIFIED &&
-                        customer.getCustomerStatus() == CustomerStatus.SUBMITTED) {
+                if (currentStatus != CustomerStatus.SUBMITTED) {
+                    throw new CustomException(
+                            "Only SUBMITTED applications can be verified", 400);
+                }
+
+                if (newStatus == CustomerStatus.VERIFIED) {
 
                     customer.setCustomerStatus(CustomerStatus.VERIFIED);
                     customer.setVerifiedBy(username);
                     customer.setVerifiedAt(LocalDateTime.now());
                     customer.setRemarks(remarks);
-                }
 
-                else if (newStatus == CustomerStatus.REJECTED &&
-                        customer.getCustomerStatus() == CustomerStatus.SUBMITTED) {
+                } else if (newStatus == CustomerStatus.REJECTED) {
 
                     customer.setCustomerStatus(CustomerStatus.REJECTED);
                     customer.setVerifiedBy(username);
                     customer.setVerifiedAt(LocalDateTime.now());
                     customer.setRemarks(remarks);
-                }
 
-                else if (newStatus == CustomerStatus.SUBMITTED &&
-                        customer.getCustomerStatus() == CustomerStatus.REJECTED) {
-
-                    // Resubmission
-                    customer.setCustomerStatus(CustomerStatus.SUBMITTED);
-                    customer.setVerifiedBy(null);
-                    customer.setVerifiedAt(null);
-                    customer.setApprovedBy(null);
-                    customer.setApprovedAt(null);
-                    customer.setRemarks("Resubmitted by " + username);
-                }
-
-                else {
-                    throw new CustomException("Invalid status transition for Verifier", 400);
+                } else {
+                    throw new CustomException("Invalid action for Verifier", 400);
                 }
                 break;
 
-            // MANAGER
+            // 🔹 MANAGER
             case MANAGER:
 
-                if (newStatus == CustomerStatus.ACTIVE &&
-                        customer.getCustomerStatus() == CustomerStatus.VERIFIED) {
+                if (currentStatus != CustomerStatus.VERIFIED) {
+                    throw new CustomException(
+                            "Only VERIFIED applications can be approved/rejected", 400);
+                }
+
+                if (newStatus == CustomerStatus.ACTIVE) {
 
                     customer.setCustomerStatus(CustomerStatus.ACTIVE);
                     customer.setApprovedBy(username);
                     customer.setApprovedAt(LocalDateTime.now());
                     customer.setRemarks(remarks);
-                }
 
-                else if (newStatus == CustomerStatus.REJECTED &&
-                        customer.getCustomerStatus() == CustomerStatus.VERIFIED) {
+                } else if (newStatus == CustomerStatus.MANAGER_REJECTED) {
 
-                    customer.setCustomerStatus(CustomerStatus.REJECTED);
+                    customer.setCustomerStatus(CustomerStatus.MANAGER_REJECTED);
                     customer.setApprovedBy(username);
                     customer.setApprovedAt(LocalDateTime.now());
                     customer.setRemarks(remarks);
-                }
 
-                else {
-                    throw new CustomException("Invalid status transition for Manager", 400);
+                } else {
+                    throw new CustomException("Invalid action for Manager", 400);
                 }
                 break;
 
             default:
-                throw new CustomException("Unknown role", 400);
+                throw new CustomException("Invalid role", 400);
         }
 
         customerRepository.save(customer);
     }
+
 }
