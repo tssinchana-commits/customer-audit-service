@@ -28,12 +28,12 @@ public void doFilter(
 
     // ✅ Skip token check for customer APIs
     if (path.startsWith("/customer/api/v1/customers")
-        || path.startsWith("/files/")) {
+    || path.startsWith("/files/")
+    || path.startsWith("/generate-token")) {
 
     chain.doFilter(request, response);
     return;
 }
-
     String authHeader = req.getHeader("Authorization");
 
     if (authHeader == null) {
